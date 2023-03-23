@@ -24,14 +24,11 @@ int returnPrecedence(char operator)
     case '+':
     case '-':
         return 1;
-        break;
     case '*':
     case '/':
         return 2;
-        break;
     case '^':
         return 3;
-        break;
     }
 }
 
