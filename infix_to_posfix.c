@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <string.h>
+#include "./utils/pilha.h"
+
+#define MAXCOLS 80
 
 bool isOperand(char c)
 {
@@ -45,8 +49,21 @@ bool hasPrecedence(char operator_1, char operator_2)
     }
 }
 
+int infixToPosfix(){}
+
 int main()
 {
+    char infix_expression[MAXCOLS];
+    char posfix_expression[MAXCOLS];
+    int position = 0;
+    
+    // calculando o tamanho da expressão
+    while((infix_expression[position++]) = getchar() != '\n')
+    infix_expression[--position] = '\0';
+    printf("%s%s", "infixa: ", infix_expression);
+    infixToPosfix(infix_expression, posfix_expression);
+    printf("\n%s%s", "posfixa: ", posfix_expression);
+
     printf("%i", hasPrecedence('-', '*'));
 
     return 0;

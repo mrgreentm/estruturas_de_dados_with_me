@@ -1,14 +1,11 @@
 #include <stdio.h>
+#include "pilha.h"
 
 #define STACK_SIZE 100
 #define TRUE 1
 #define FALSE 0
 
-typedef struct
-{
-    int top;
-    int items[STACK_SIZE];
-} Stack;
+
 
 // recebe um ponteiro que aponta para a pilha
 int empty(Stack *ps)
@@ -66,23 +63,23 @@ int stacktop(Stack *ps)
     }
 }
 
-int main()
-{
-    Stack s;
-    // devemos iniciar o topo com -1 para indicarmos que a pilha está vazia
-    s.top = -1;
-    push(&s, 12);
-    push(&s, 24);
-    push(&s, 1);
-    push(&s, 5);
-    push(&s, 17);
-    push(&s, 51);
-    push(&s, 57);
-    push(&s, 789);
+// int main()
+// {
+//     Stack s;
+//     // devemos iniciar o topo com -1 para indicarmos que a pilha está vazia
+//     s.top = -1;
+//     push(&s, 12);
+//     push(&s, 24);
+//     push(&s, 1);
+//     push(&s, 5);
+//     push(&s, 17);
+//     push(&s, 51);
+//     push(&s, 57);
+//     push(&s, 789);
 
-    printf("\n## %i foi removido ##\n", pop(&s));
+//     printf("\n## %i foi removido ##\n", pop(&s));
 
-    printf("Tamanho da pilha: %i", length(&s));
+//     printf("Tamanho da pilha: %i", length(&s));
 
-    return 0;
-}
+//     return 0;
+// }
