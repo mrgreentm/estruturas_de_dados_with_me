@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "pilha.h"
+#include <stdio.h>
 
 #define STACK_SIZE 100
 #define TRUE 1
@@ -29,7 +29,7 @@ int pop(Stack *ps)
     }
 }
 
-void popAndTest(Stack *ps, int *px, int *pund)
+void popAndTest(Stack *ps, char *px, int *pund)
 {
     if(empty(ps)){
         *pund = TRUE;
