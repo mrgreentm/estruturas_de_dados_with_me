@@ -35,16 +35,16 @@ int returnPrecedence(char operator)
     }
 }
 
-int hasPrecedence(char operator_1, char operator_2)
+bool hasPrecedence(char operator_1, char operator_2)
 {
     int precedenceOperator_1 = returnPrecedence(operator_1);
     int precedenceOperator_2 = returnPrecedence(operator_2);
 
     if (precedenceOperator_1 >= precedenceOperator_2){
-        return 1;
+        return true;
     }
     else{
-        return 0;
+        return false;
     }
 }
 
