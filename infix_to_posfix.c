@@ -49,7 +49,26 @@ bool hasPrecedence(char operator_1, char operator_2)
     }
 }
 
-int infixToPosfix(){}
+void infixToPosfix(char infix[], char posfix[]){
+    int position, under;    // unde é para verificarmos mais tarde se houver underflow na pilha
+    int outposition = 0;
+    char topSymbol = "*"; // caracter de maior precedencia
+    char symbol;
+    Stack operatorStack;
+    operatorStack.top = -1; // qualquer pilha deve sempre iniciar com topo com valor -1 para indicar que está vazia
+    
+    for (position = 0; (symbol = infix[position]) != '\0'; position++)
+    {
+        if(isOperand(symbol))
+            posfix[outposition++] = symbol;
+        else 
+        {
+
+        }
+    }
+    
+
+}
 
 int main()
 {

@@ -29,6 +29,17 @@ int pop(Stack *ps)
     }
 }
 
+void popAndTest(Stack *ps, int *px, int *pund)
+{
+    if(empty(ps)){
+        *pund = TRUE;
+        return;
+    }
+    *pund = FALSE;
+    *px = ps->items[ps->top--];
+    return;
+}
+
 void push(Stack *ps, int n)
 {
     if (ps->top == STACK_SIZE - 1)
