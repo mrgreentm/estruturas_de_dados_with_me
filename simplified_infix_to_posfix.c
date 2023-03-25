@@ -51,10 +51,12 @@ void infixToPosFix(char infix[], char posfix[]) {
 
         if (isOperand(symbol)) {
             posfix[posfixLength++] = symbol;
+            posfix[posfixLength++] = ' ';
         } else {
             while (!empty(&operatorStack) && hasPrecedence(operatorStack.items[operatorStack.top], symbol)) {
                 char topSymbol = pop(&operatorStack);
                 posfix[posfixLength++] = topSymbol;
+                posfix[posfixLength++] = ' ';
             }
             push(&operatorStack, symbol);
         }
@@ -63,11 +65,11 @@ void infixToPosFix(char infix[], char posfix[]) {
     while (!empty(&operatorStack)) {
         char topSymbol = pop(&operatorStack);
         posfix[posfixLength++] = topSymbol;
+        posfix[posfixLength++] = ' ';
     }
 
     posfix[posfixLength] = '\0';
 }
-
 
 int main()
 {
@@ -76,6 +78,13 @@ int main()
 
     printf("Digite a expressao infix: ");
     fgets(infix, MAXCOLS, stdin);
+
+    char *pch = strchr(infix, ' ');
+    while (pch != NULL)
+    {
+        strncpy(pch, pch + 1, strlen(pch));
+        pch = strchr(infix, ' ');
+    }
 
     infixToPosFix(infix, posfix);
 
