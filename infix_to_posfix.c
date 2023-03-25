@@ -6,59 +6,76 @@
 
 #define MAXCOLS 80
 
-bool isOperand(char c) {
+bool isOperand(char c)
+{
     return isalnum(c);
 }
 
-int getPrecedence(char operator) {
-    switch (operator) {
-        case '+':
-        case '-':
-            return 1;
-        case '*':
-        case '/':
-            return 2;
-        case '^':
-            return 3;
-        default:
-            return 0;
+int getPrecedence(char operator)
+{
+    switch (operator)
+    {
+    case '+':
+    case '-':
+        return 1;
+    case '*':
+    case '/':
+        return 2;
+    case '^':
+        return 3;
+    default:
+        return 0;
     }
 }
 
-bool hasPrecedence(char operator1, char operator2) {
+bool hasPrecedence(char operator1, char operator2)
+{
     int precedence1 = getPrecedence(operator1);
     int precedence2 = getPrecedence(operator2);
 
-    if (precedence1 == 0 || precedence2 == 0) {
+    if (precedence1 == 0 && precedence2 == 0)
+    {
         return false;
     }
 
     return precedence1 >= precedence2;
 }
 
-void infixToPosfix(char infix[], char posfix[]) {
+void infixToPosfix(char infix[], char posfix[])
+{
     int position = 0, outPosition = 0;
     char symbol, topSymbol;
     bool underflow;
     Stack operatorStack;
     operatorStack.top = -1;
 
-    while ((symbol = infix[position++]) != '\0') {
-        if (isOperand(symbol)) {
+    while ((symbol = infix[position++]) != '\0')
+    {
+        if (isOperand(symbol))
+        {
             posfix[outPosition++] = symbol;
-        } else if (symbol == '(') {
+        }
+        else if (symbol == '(')
+        {
             push(&operatorStack, symbol);
-        } else if (symbol == ')') {
-            while (!empty(&operatorStack) && operatorStack.items[operatorStack.top] != '(') {
+        }
+        else if (symbol == ')')
+        {
+            while (!empty(&operatorStack) && operatorStack.items[operatorStack.top] != '(')
+            {
                 topSymbol = pop(&operatorStack);
                 posfix[outPosition++] = topSymbol;
             }
 
-            if (!empty(&operatorStack) && operatorStack.items[operatorStack.top] == '(') {
+            if (!empty(&operatorStack) && operatorStack.items[operatorStack.top] == '(')
+            {
                 pop(&operatorStack);
             }
-        } else {
-            while (!empty(&operatorStack) && hasPrecedence(operatorStack.items[operatorStack.top], symbol)) {
+        }
+        else
+        {
+            while (!empty(&operatorStack) && hasPrecedence(operatorStack.items[operatorStack.top], symbol))
+            {
                 topSymbol = pop(&operatorStack);
                 posfix[outPosition++] = topSymbol;
             }
@@ -67,7 +84,8 @@ void infixToPosfix(char infix[], char posfix[]) {
         }
     }
 
-    while (!empty(&operatorStack)) {
+    while (!empty(&operatorStack))
+    {
         topSymbol = pop(&operatorStack);
         posfix[outPosition++] = topSymbol;
     }
@@ -75,7 +93,8 @@ void infixToPosfix(char infix[], char posfix[]) {
     posfix[outPosition] = '\0';
 }
 
-int main() {
+int main()
+{
     char infix[MAXCOLS];
     char posfix[MAXCOLS];
 
@@ -88,4 +107,3 @@ int main() {
 
     return 0;
 }
-
