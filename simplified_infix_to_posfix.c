@@ -54,11 +54,12 @@ void infixToPosFix(char infix[], char posfix[])
     {
         if (isOperand(infix[i]))
         {
-            operand.items[operandIndex++] = infix[i];
+            push(&operand,infix[i]);
         }
         if (!isOperand(infix[i]) && hasPrecedence(infix[i], minorPrecedence))
         {
-            operators.items[operatorsIndex++] = infix[i];
+            push(&operand,infix[i]);
+
         }
         else if (!hasPrecedence(infix[i], minorPrecedence))
         {
@@ -72,7 +73,7 @@ void infixToPosFix(char infix[], char posfix[])
     }
     for (int i = 0; i < length(&operators); i++)
     {
-        posfix[posfixLength+1] = pop(&operators);
+        posfix[posfixLength++] = pop(&operators);
     }
     printf("\n%s", posfix);
     
@@ -87,7 +88,7 @@ int main()
     printf("Digite a expressao infix: ");
     fgets(infix, MAXCOLS, stdin);
 
-    infixToPosfix(infix, posfix);
+    infixToPosFix(infix, posfix);
 
     printf("Expressao posfixa: %s\n", posfix);
 
