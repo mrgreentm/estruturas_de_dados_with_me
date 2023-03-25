@@ -42,37 +42,27 @@ bool hasPrecedence(char operator1, char operator2)
 }
 
 void infixToPosFix(char infix[], char posfix[]) {
-    Stack operand;
-    Stack operators;
-    operand.top = -1;
-    operators.top = -1;
+    Stack operatorStack;
+    operatorStack.top = -1;
     int posfixLength = 0;
-    int infixLength = strlen(infix);
 
-    for (int i = 0; i < infixLength; i++) {
-        if (isOperand(infix[i])) {
-            posfix[posfixLength++] = infix[i];
-        } else if (infix[i] == '(') {
-            push(&operators, infix[i]);
-        } else if (infix[i] == ')') {
-            while (!empty(&operators) && operators.items[operators.top] != '(') {
-                posfix[posfixLength++] = pop(&operators);
-            }
+    for (int i = 0; i < strlen(infix); i++) {
+        char symbol = infix[i];
 
-            if (!empty(&operators) && operators.items[operators.top] == '(') {
-                pop(&operators);
-            }
+        if (isOperand(symbol)) {
+            posfix[posfixLength++] = symbol;
         } else {
-            while (!empty(&operators) && hasPrecedence(operators.items[operators.top], infix[i])) {
-                posfix[posfixLength++] = pop(&operators);
+            while (!empty(&operatorStack) && hasPrecedence(operatorStack.items[operatorStack.top], symbol)) {
+                char topSymbol = pop(&operatorStack);
+                posfix[posfixLength++] = topSymbol;
             }
-
-            push(&operators, infix[i]);
+            push(&operatorStack, symbol);
         }
     }
 
-    while (!empty(&operators)) {
-        posfix[posfixLength++] = pop(&operators);
+    while (!empty(&operatorStack)) {
+        char topSymbol = pop(&operatorStack);
+        posfix[posfixLength++] = topSymbol;
     }
 
     posfix[posfixLength] = '\0';
