@@ -41,44 +41,43 @@ bool hasPrecedence(char operator1, char operator2)
     return precedence1 >= precedence2;
 }
 
-void infixToPosFix(char infix[], char posfix[])
-{
+void infixToPosFix(char infix[], char posfix[]) {
     Stack operand;
     Stack operators;
-    int operandIndex = 0, operatorsIndex = 0, minorPrecedence = 0;
     operand.top = -1;
     operators.top = -1;
     int posfixLength = 0;
+    int infixLength = strlen(infix);
 
-    for (int i = 0; i < strlen(infix); i++) // strlen(infix) = tamanho da string infix
-    {
-        if (isOperand(infix[i]))
-        {
-            push(&operand,infix[i]);
-        }
-        if (!isOperand(infix[i]) && hasPrecedence(infix[i], minorPrecedence))
-        {
-            push(&operand,infix[i]);
+    for (int i = 0; i < infixLength; i++) {
+        if (isOperand(infix[i])) {
+            posfix[posfixLength++] = infix[i];
+        } else if (infix[i] == '(') {
+            push(&operators, infix[i]);
+        } else if (infix[i] == ')') {
+            while (!empty(&operators) && operators.items[operators.top] != '(') {
+                posfix[posfixLength++] = pop(&operators);
+            }
 
-        }
-        else if (!hasPrecedence(infix[i], minorPrecedence))
-        {
-            minorPrecedence = infix[i];
+            if (!empty(&operators) && operators.items[operators.top] == '(') {
+                pop(&operators);
+            }
+        } else {
+            while (!empty(&operators) && hasPrecedence(operators.items[operators.top], infix[i])) {
+                posfix[posfixLength++] = pop(&operators);
+            }
+
+            push(&operators, infix[i]);
         }
     }
-    for (int i = 0; i < length(&operand); i++)
-    {
-        posfix[i] = pop(&operand);
-        posfixLength = i;
-    }
-    for (int i = 0; i < length(&operators); i++)
-    {
+
+    while (!empty(&operators)) {
         posfix[posfixLength++] = pop(&operators);
     }
-    printf("\n%s", posfix);
-    
-    
+
+    posfix[posfixLength] = '\0';
 }
+
 
 int main()
 {
