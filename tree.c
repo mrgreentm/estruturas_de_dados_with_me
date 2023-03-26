@@ -48,24 +48,19 @@ void imprimirArvore(no *raiz, int nivel) {
 }
 
 int main() {
-    // Criar a raiz da árvore
     no *raiz = criarNo('A');
 
-    // Criar alguns nós filhos
     no *filho1 = criarNo('B');
     no *filho2 = criarNo('C');
     no *filho3 = criarNo('D');
     no *filho4 = criarNo('E');
 
-    // Adicionar os nós filhos à raiz
     adicionarFilho(raiz, filho1);
     adicionarFilho(raiz, filho2);
     adicionarFilho(raiz, filho3);
 
-    // Adicionar um filho ao filho1
     adicionarFilho(filho1, filho4);
 
-    // Imprimir a árvore a partir da raiz
     imprimirArvore(raiz, 0);
 
     return 0;
