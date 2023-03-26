@@ -16,7 +16,7 @@ int empty(Stack *ps)
         return (FALSE);
 };
 
-int pop(Stack *ps)
+char pop(Stack *ps)
 {
     if (empty(ps))
     {
@@ -40,7 +40,7 @@ void popAndTest(Stack *ps, char *px, int *pund)
     return;
 }
 
-void push(Stack *ps, int n)
+void push(Stack *ps, char n)
 {
     if (ps->top == STACK_SIZE - 1)
     {
