@@ -77,7 +77,7 @@ int stacktop(Stack *ps)
 // int main()
 // {
 //     Stack s;
-//     // devemos iniciar o topo com -1 para indicarmos que a pilha está vazia
+//     // devemos iniciar o topo com -1 para indicarmos que a pilha está vazia a
 //     s.top = -1;
 //     push(&s, 12);
 //     push(&s, 24);
