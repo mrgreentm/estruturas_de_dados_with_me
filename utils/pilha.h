@@ -2,11 +2,12 @@
 #define PILHA_H
 #include <string.h>
 #include <stdio.h>
+#define MAX_SIZE 100
 
 typedef struct
 {
     int top;
-    char items[100];
+    char items[MAX_SIZE];
 } Stack;
 
 int empty(Stack *ps);
