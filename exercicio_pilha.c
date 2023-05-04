@@ -44,9 +44,13 @@ void empilhar(Stack *p, char number[])
 int main()
 {
     Stack pilha_inteiros, pilha_fracionarios;
+    int k, w;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
     char parteInteiraComoString[MAX_SIZE];
+    printf("Digite, respectivamente, os valores para K e W\n");
+    scanf("%d %d", &k, &w);
+    printf("Digite o numero desejado (DEVE SER NECESSARIAMENTE UM NUMERO FRACIONARIO)\n");
     scanf("%lf", &number);
 
     capturarParteFracionaria(number, parteFracionariaComoString);
@@ -55,7 +59,6 @@ int main()
     empilhar(&pilha_inteiros, parteInteiraComoString);
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
 
-    printf("%c", pop(&pilha_inteiros));
     return 0;
 }
 // gcc -o a exercicio_pilha.c ./utils/pilha.c -lm
