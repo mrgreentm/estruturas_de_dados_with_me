@@ -35,16 +35,27 @@ void capturarParteInteira(double number, char parteInteiraComoString[])
     }
 }
 
+void empilhar(Stack *p, char number[])
+{
+    for (int i = 0; i < strlen(number); i++)
+        push(p, number[i]);
+}
+
 int main()
 {
-    Stack p;
+    Stack pilha_inteiros, pilha_fracionarios;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
     char parteInteiraComoString[MAX_SIZE];
     scanf("%lf", &number);
+
     capturarParteFracionaria(number, parteFracionariaComoString);
     capturarParteInteira(number, parteInteiraComoString);
-    printf("%s\n%s\n", parteFracionariaComoString, parteInteiraComoString);
 
+    empilhar(&pilha_inteiros, parteInteiraComoString);
+    empilhar(&pilha_fracionarios, parteFracionariaComoString);
+
+    printf("%c", pop(&pilha_inteiros));
     return 0;
 }
+// gcc -o a exercicio_pilha.c ./utils/pilha.c -lm
