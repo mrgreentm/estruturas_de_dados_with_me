@@ -22,14 +22,29 @@ void capturarParteFracionaria(double number, char parteFracionariaComoString[])
         j++;
     }
 }
+void capturarParteInteira(double number, char parteInteiraComoString[])
+{
+    int parteInteira = (int)number;
+    char buffer[MAX_SIZE];
+    int j = 0;
+    sprintf(buffer, "%d", parteInteira);
+    for (int i = 0; i < strlen(buffer); i++)
+    {
+        parteInteiraComoString[j] = buffer[i];
+        j++;
+    }
+}
 
 int main()
 {
     Stack p;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
+    char parteInteiraComoString[MAX_SIZE];
     scanf("%lf", &number);
     capturarParteFracionaria(number, parteFracionariaComoString);
+    capturarParteInteira(number, parteInteiraComoString);
+    printf("%s\n%s\n", parteFracionariaComoString, parteInteiraComoString);
 
     return 0;
 }
