@@ -16,6 +16,27 @@ void imprimirPilha(Stack *p)
     printf("\n");
 }
 
+void ordenarPilha(Stack *pilha)
+{
+    Stack pilhaAuxiliar;
+    pilhaAuxiliar.top = -1;
+
+    while (!empty(pilha))
+    {
+        char elemento = pop(pilha);
+        while (!empty(&pilhaAuxiliar) && stacktop(&pilhaAuxiliar) < elemento)
+        {
+            push(pilha, pop(&pilhaAuxiliar));
+        }
+        push(&pilhaAuxiliar, elemento);
+    }
+
+    while (!empty(&pilhaAuxiliar))
+    {
+        push(pilha, pop(&pilhaAuxiliar));
+    }
+}
+
 int converteCharParaInteiro(char numero)
 {
     return numero - '0';
@@ -41,8 +62,6 @@ int achaMenorElementoPilha(Stack *pilha)
             menor = elemento;
         }
     }
-
-     
 
     return menor;
 }
@@ -120,14 +139,15 @@ int main()
     empilhar(&pilha_inteiros, parteInteiraComoString);
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
 
-    // for (int i = 0; i < k; i++)
-    //     removeMenorElementoDaPilha(&pilha_inteiros);
-    // for (int i = 0; i < w; i++)
-    removeMenorElementoDaPilha(&pilha_fracionarios);
-    imprimirPilha(&pilha_fracionarios);
+    for (int i = 0; i < k; i++)
+        removeMenorElementoDaPilha(&pilha_inteiros);
+    for (int i = 0; i < w; i++)
+        removeMenorElementoDaPilha(&pilha_fracionarios);
 
-    removeMenorElementoDaPilha(&pilha_fracionarios);
-
+    ordenarPilha(&pilha_fracionarios);
+    ordenarPilha(&pilha_inteiros);
+    
+    imprimirPilha(&pilha_inteiros);
     imprimirPilha(&pilha_fracionarios);
 
     return 0;
