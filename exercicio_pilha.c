@@ -10,10 +10,15 @@ void imprimirPilha(Stack *p)
 {
     Stack PilhaAuxiliar = *p;
     PilhaAuxiliar.top = p->top;
-    printf("\nPilha: ");
     while (!empty(&PilhaAuxiliar))
-        printf("%d,", pop(&PilhaAuxiliar));
-    printf("\n");
+        printf("%d", pop(&PilhaAuxiliar));
+}
+
+void concatenarValoresExibirResultado(Stack *p1, Stack *p2)
+{
+    printf("Maio valor: ");
+    imprimirPilha(p1);
+    imprimirPilha(p2);
 }
 
 void ordenarPilha(Stack *pilha)
@@ -69,7 +74,6 @@ int achaMenorElementoPilha(Stack *pilha)
 void removeMenorElementoDaPilha(Stack *pilha)
 {
     int menor = achaMenorElementoPilha(pilha);
-    printf("\nmenor:%d", menor);
     int tamanhoRemocao = 0;
     int elemento, i = 0;
     Stack PilhaAuxiliar;
@@ -84,7 +88,6 @@ void removeMenorElementoDaPilha(Stack *pilha)
     while (!empty(&PilhaAuxiliar))
     {
         elemento = pop(&PilhaAuxiliar);
-        printf("\nelemento:%d", elemento);
         push(pilha, elemento);
     }
 }
@@ -146,9 +149,8 @@ int main()
 
     ordenarPilha(&pilha_fracionarios);
     ordenarPilha(&pilha_inteiros);
-    
-    imprimirPilha(&pilha_inteiros);
-    imprimirPilha(&pilha_fracionarios);
+
+    concatenarValoresExibirResultado(&pilha_inteiros, &pilha_fracionarios);
 
     return 0;
 }
