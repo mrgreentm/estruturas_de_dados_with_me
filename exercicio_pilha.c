@@ -3,13 +3,67 @@
 #include <stdbool.h>
 #include "./utils/pilha.h"
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
-void split_number(double number)
+void printaVetor(int v[], int tamanhoVetor)
 {
-    printf("%lf", ceil(number));
+    for (int i = 0; i < tamanhoVetor; i++)
+    {
+        printf("%d\n", v[i]);
+    }
 }
 
+int converteCharParaInteiro(char numero)
+{
+    return numero - '0';
+}
+
+int achaMenorElementoPilha(Stack *pilha)
+{
+    if (empty(pilha))
+    {
+        printf("A pilha está vazia.\n");
+        return 0;
+    }
+
+    Stack PilhaAuxiliar = *pilha;
+    PilhaAuxiliar.top = pilha->top;
+    int menor = 10;
+
+    while (!empty(&PilhaAuxiliar))
+    {
+        char elemento = converteCharParaInteiro(pop(&PilhaAuxiliar));
+        if (elemento < menor)
+        {
+            menor = elemento;
+        }
+    }
+    return menor;
+}
+
+void removeMenorElementoDaPilha(Stack *pilha)
+{
+    int menor = achaMenorElementoPilha(pilha);
+    printf("\nmenor:%d", menor);
+    int tamanhoRemocao = 0;
+    int elemento, i = 0;
+    Stack PilhaAuxiliar;
+    PilhaAuxiliar.top = -1;
+    while (!empty(pilha))
+    {
+        elemento = converteCharParaInteiro(pop(pilha));
+        if (elemento != menor)
+            push(&PilhaAuxiliar, elemento);
+    }
+
+    while (!empty(&PilhaAuxiliar))
+    {
+        elemento = pop(&PilhaAuxiliar);
+        printf("\nelemento:%d", elemento);
+        push(pilha, elemento);
+    }
+}
 void capturarParteFracionaria(double number, char parteFracionariaComoString[])
 {
     char buffer[MAX_SIZE];
@@ -44,6 +98,8 @@ void empilhar(Stack *p, char number[])
 int main()
 {
     Stack pilha_inteiros, pilha_fracionarios;
+    pilha_inteiros.top = -1;
+    pilha_fracionarios.top = -1;
     int k, w;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
@@ -59,6 +115,7 @@ int main()
     empilhar(&pilha_inteiros, parteInteiraComoString);
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
 
+    removeMenorElementoDaPilha(&pilha_inteiros);
     return 0;
 }
 // gcc -o a exercicio_pilha.c ./utils/pilha.c -lm
