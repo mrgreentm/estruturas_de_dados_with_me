@@ -6,12 +6,14 @@
 #include <stdlib.h>
 #include <math.h>
 
-void printaVetor(int v[], int tamanhoVetor)
+void imprimirPilha(Stack *p)
 {
-    for (int i = 0; i < tamanhoVetor; i++)
-    {
-        printf("%d\n", v[i]);
-    }
+    Stack PilhaAuxiliar = *p;
+    PilhaAuxiliar.top = p->top;
+    printf("\nPilha: ");
+    while (!empty(&PilhaAuxiliar))
+        printf("%d,", pop(&PilhaAuxiliar));
+    printf("\n");
 }
 
 int converteCharParaInteiro(char numero)
@@ -39,6 +41,9 @@ int achaMenorElementoPilha(Stack *pilha)
             menor = elemento;
         }
     }
+
+     
+
     return menor;
 }
 
@@ -115,7 +120,16 @@ int main()
     empilhar(&pilha_inteiros, parteInteiraComoString);
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
 
-    removeMenorElementoDaPilha(&pilha_inteiros);
+    // for (int i = 0; i < k; i++)
+    //     removeMenorElementoDaPilha(&pilha_inteiros);
+    // for (int i = 0; i < w; i++)
+    removeMenorElementoDaPilha(&pilha_fracionarios);
+    imprimirPilha(&pilha_fracionarios);
+
+    removeMenorElementoDaPilha(&pilha_fracionarios);
+
+    imprimirPilha(&pilha_fracionarios);
+
     return 0;
 }
 // gcc -o a exercicio_pilha.c ./utils/pilha.c -lm
