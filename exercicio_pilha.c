@@ -8,16 +8,17 @@
 
 void imprimirPilha(Stack *p)
 {
-    Stack PilhaAuxiliar = *p;
-    PilhaAuxiliar.top = p->top;
-    while (!empty(&PilhaAuxiliar))
-        printf("%d", pop(&PilhaAuxiliar));
+    Stack pilhaAuxiliar = *p;
+    pilhaAuxiliar.top = p->top;
+    while (!empty(&pilhaAuxiliar))
+        printf("%d", pop(&pilhaAuxiliar));
 }
 
 void concatenarValoresExibirResultado(Stack *p1, Stack *p2)
 {
-    printf("Maio valor: ");
+    printf("Maior valor: ");
     imprimirPilha(p1);
+    printf(".");
     imprimirPilha(p2);
 }
 
@@ -30,16 +31,13 @@ void ordenarPilha(Stack *pilha)
     {
         char elemento = pop(pilha);
         while (!empty(&pilhaAuxiliar) && stacktop(&pilhaAuxiliar) < elemento)
-        {
             push(pilha, pop(&pilhaAuxiliar));
-        }
+
         push(&pilhaAuxiliar, elemento);
     }
 
     while (!empty(&pilhaAuxiliar))
-    {
         push(pilha, pop(&pilhaAuxiliar));
-    }
 }
 
 int converteCharParaInteiro(char numero)
@@ -55,39 +53,43 @@ int achaMenorElementoPilha(Stack *pilha)
         return 0;
     }
 
-    Stack PilhaAuxiliar = *pilha;
-    PilhaAuxiliar.top = pilha->top;
+    Stack pilhaAuxiliar = *pilha;
+    pilhaAuxiliar.top = pilha->top;
+
     int menor = 10;
 
-    while (!empty(&PilhaAuxiliar))
+    while (!empty(&pilhaAuxiliar))
     {
-        char elemento = converteCharParaInteiro(pop(&PilhaAuxiliar));
+        int elemento = converteCharParaInteiro(pop(&pilhaAuxiliar));
+        printf("# elemento: %d\n", elemento);
         if (elemento < menor)
-        {
             menor = elemento;
-        }
     }
-
+    printf("menor: %d\n", menor);
     return menor;
 }
 
-void removeMenorElementoDaPilha(Stack *pilha)
+void removeMenorElementoDaPilha(Stack *pilha, int menor)
 {
-    int menor = achaMenorElementoPilha(pilha);
-    int tamanhoRemocao = 0;
+    printf("MMmenor: %d\n", menor);
     int elemento, i = 0;
-    Stack PilhaAuxiliar;
-    PilhaAuxiliar.top = -1;
+    Stack pilhaAuxiliar;
+    pilhaAuxiliar.top = -1;
     while (!empty(pilha))
     {
         elemento = converteCharParaInteiro(pop(pilha));
+
+        if (elemento == menor && i > 0)
+            push(&pilhaAuxiliar, elemento);
+        if (elemento == menor && i == 0)
+            i++;
         if (elemento != menor)
-            push(&PilhaAuxiliar, elemento);
+            push(&pilhaAuxiliar, elemento);
     }
 
-    while (!empty(&PilhaAuxiliar))
+    while (!empty(&pilhaAuxiliar))
     {
-        elemento = pop(&PilhaAuxiliar);
+        elemento = pop(&pilhaAuxiliar);
         push(pilha, elemento);
     }
 }
@@ -124,10 +126,10 @@ void empilhar(Stack *p, char number[])
 
 int main()
 {
-    Stack pilha_inteiros, pilha_fracionarios;
+    Stack pilha_inteiros, pilha_fracionarios, pilha_auxiliar_inteiros, pilha_auxiliar_fracionarios;
     pilha_inteiros.top = -1;
     pilha_fracionarios.top = -1;
-    int k, w;
+    int k, w, menor = 10;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
     char parteInteiraComoString[MAX_SIZE];
@@ -143,14 +145,24 @@ int main()
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
 
     for (int i = 0; i < k; i++)
-        removeMenorElementoDaPilha(&pilha_inteiros);
-    for (int i = 0; i < w; i++)
-        removeMenorElementoDaPilha(&pilha_fracionarios);
+    {
+        pilha_auxiliar_inteiros = pilha_inteiros;
+        pilha_auxiliar_inteiros.top = pilha_inteiros.top;
+        menor = achaMenorElementoPilha(&pilha_auxiliar_inteiros);
+        removeMenorElementoDaPilha(&pilha_auxiliar_inteiros, menor);
+    }
+    for (int j = 0; j < w; j++)
+    {
+        pilha_auxiliar_fracionarios = pilha_fracionarios;
+        pilha_auxiliar_fracionarios.top = pilha_fracionarios.top;
+        menor = achaMenorElementoPilha(&pilha_auxiliar_fracionarios);
+        removeMenorElementoDaPilha(&pilha_auxiliar_fracionarios, menor);
+    }
 
-    ordenarPilha(&pilha_fracionarios);
-    ordenarPilha(&pilha_inteiros);
+    ordenarPilha(&pilha_auxiliar_fracionarios);
+    ordenarPilha(&pilha_auxiliar_inteiros);
 
-    concatenarValoresExibirResultado(&pilha_inteiros, &pilha_fracionarios);
+    concatenarValoresExibirResultado(&pilha_auxiliar_inteiros, &pilha_auxiliar_fracionarios);
 
     return 0;
 }
