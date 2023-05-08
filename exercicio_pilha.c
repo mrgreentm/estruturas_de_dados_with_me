@@ -131,6 +131,8 @@ int main()
     empilhar(&pilha_fracionarios, parteFracionariaComoString);
     pilha_auxiliar_inteiros = pilha_inteiros;
     pilha_auxiliar_inteiros.top = pilha_inteiros.top;
+    pilha_auxiliar_fracionarios = pilha_fracionarios;
+    pilha_auxiliar_fracionarios.top = pilha_fracionarios.top;
     for (int i = 0; i < k; i++)
     {
         menor = achaMenorElementoPilha(&pilha_inteiros, &pilha_auxiliar_inteiros);
@@ -138,8 +140,7 @@ int main()
     }
     for (int j = 0; j < w; j++)
     {
-        pilha_auxiliar_fracionarios = pilha_fracionarios;
-        pilha_auxiliar_fracionarios.top = pilha_fracionarios.top;
+
         menor = achaMenorElementoPilha(&pilha_fracionarios, &pilha_auxiliar_fracionarios);
         removeMenorElementoDaPilha(&pilha_fracionarios, menor, &pilha_auxiliar_fracionarios);
     }
