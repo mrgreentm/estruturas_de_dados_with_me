@@ -1,34 +1,157 @@
 #include <stdio.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include "./utils/pilha.h"
-#include <string.h>
 #include <stdlib.h>
-#include <math.h>
+#include <stdbool.h>
+#include <string.h>
+#define MAX_SIZE 100
 
-void concatenarValoresExibirResultado(Stack *p1, Stack *p2)
+typedef struct no
 {
-    printf("Maior valor: ");
-    while (!empty(p1))
-        printf("%d", pop(p1));
-    printf(".");
-    while (!empty(p2))
-        printf("%d", pop(p2));
+    int dado;
+    struct no *proximo;
+} No;
+
+typedef struct pilha
+{
+    No *topo;
+} Pilha;
+
+Pilha *criarPilha()
+{
+    Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
+    pilha->topo = NULL;
+    return pilha;
 }
 
-void ordenarPilha(Stack *pilha, Stack *pilhaAuxiliar)
+bool pilhaVazia(Pilha *pilha)
 {
-    while (!empty(pilha))
-    {
-        char elemento = pop(pilha);
-        while (!empty(pilhaAuxiliar) && stacktop(pilhaAuxiliar) < elemento)
-            push(pilha, pop(pilhaAuxiliar));
+    return (pilha->topo == NULL);
+}
 
-        push(pilhaAuxiliar, elemento);
+void empilhar(Pilha *pilha, char valor)
+{
+    No *novoNo = (No *)malloc(sizeof(No));
+    novoNo->dado = valor;
+    novoNo->proximo = pilha->topo;
+    pilha->topo = novoNo;
+}
+
+int desempilhar(Pilha *pilha)
+{
+    if (pilhaVazia(pilha))
+    {
+        printf("Erro: a pilha está vazia.\n");
+        exit(EXIT_FAILURE);
     }
 
-    while (!empty(pilhaAuxiliar))
-        push(pilha, pop(pilhaAuxiliar));
+    int valorDesempilhado = pilha->topo->dado;
+    No *noDesempilhado = pilha->topo;
+    pilha->topo = pilha->topo->proximo;
+    free(noDesempilhado);
+    return valorDesempilhado;
+}
+
+int topo(Pilha *pilha)
+{
+    if (pilhaVazia(pilha))
+    {
+        printf("Erro: a pilha está vazia.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return pilha->topo->dado;
+}
+
+int achaMenorElementoPilha(Pilha *pilha)
+{
+    if (pilhaVazia(pilha))
+    {
+        printf("Erro: a pilha está vazia.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Pilha *pilhaAux = criarPilha();
+    int menorElemento = topo(pilha);
+
+    while (!pilhaVazia(pilha))
+    {
+        int elementoAtual = desempilhar(pilha);
+        empilhar(pilhaAux, elementoAtual);
+
+        if (elementoAtual < menorElemento)
+        {
+            menorElemento = elementoAtual;
+        }
+    }
+
+    while (!pilhaVazia(pilhaAux))
+    {
+        int elementoAtual = desempilhar(pilhaAux);
+        empilhar(pilha, elementoAtual);
+    }
+
+    free(pilhaAux);
+    return menorElemento;
+}
+void concatenarValoresExibirResultado(Pilha *pilha1, Pilha *pilha2)
+{
+    Pilha *pilhaAux = criarPilha();
+    printf("Maior valor: ");
+
+    // Esvazia a primeira pilha, empilhando os elementos na pilha auxiliar
+    while (!pilhaVazia(pilha1))
+    {
+        int elemento = desempilhar(pilha1);
+        empilhar(pilhaAux, elemento);
+    }
+
+    // Esvazia a segunda pilha, empilhando os elementos na pilha auxiliar
+    while (!pilhaVazia(pilha2))
+    {
+        int elemento = desempilhar(pilha2);
+        empilhar(pilhaAux, elemento);
+    }
+
+    // Esvazia a pilha auxiliar, exibindo os elementos concatenados
+    while (!pilhaVazia(pilhaAux))
+    {
+        int elemento = desempilhar(pilhaAux);
+        printf("%d", elemento);
+    }
+
+    printf(".\n");
+
+    free(pilhaAux);
+}
+
+void ordenarPilha(Pilha *pilha)
+{
+    Pilha *pilhaAux = criarPilha();
+
+    while (!pilhaVazia(pilha))
+    {
+        int elemento = desempilhar(pilha);
+
+        // Desempilha os elementos da pilha auxiliar e empilha na pilha original,
+        // enquanto o elemento atual for menor que o elemento do topo da pilha auxiliar
+        while (!pilhaVazia(pilhaAux) && elemento < topo(pilhaAux))
+        {
+            int elementoAux = desempilhar(pilhaAux);
+            empilhar(pilha, elementoAux);
+        }
+
+        // Empilha o elemento atual na pilha auxiliar
+        empilhar(pilhaAux, elemento);
+    }
+
+    // Desempilha os elementos da pilha auxiliar e empilha na pilha original,
+    // garantindo que a pilha esteja ordenada em ordem crescente
+    while (!pilhaVazia(pilhaAux))
+    {
+        int elemento = desempilhar(pilhaAux);
+        empilhar(pilha, elemento);
+    }
+
+    free(pilhaAux);
 }
 
 int converteCharParaInteiro(char numero)
@@ -36,49 +159,32 @@ int converteCharParaInteiro(char numero)
     return numero - '0';
 }
 
-int achaMenorElementoPilha(Stack *pilha, Stack *pilhaAuxiliar)
-{
-    if (empty(pilha))
-    {
-        printf("A pilha está vazia.\n");
-        return 0;
-    }
-    int menor = 10;
 
-    while (!empty(pilhaAuxiliar))
-    {
-        int elemento = converteCharParaInteiro(pop(pilhaAuxiliar));
-        printf("# elemento: %d\n", elemento);
-        if (elemento < menor)
-            menor = elemento;
-    }
-    printf("menor: %d\n", menor);
-    return menor;
-}
-
-void removeMenorElementoDaPilha(Stack *pilha, int menor, Stack *pilhaAuxiliar)
+void removeMenorElementoDaPilha(Pilha *pilha, int menor, Pilha *pilhaAuxiliar)
 {
-    printf("MMmenor: %d\n", menor);
     int elemento, i = 0;
 
-    while (!empty(pilha))
+    while (!pilhaVazia(pilha))
     {
-        elemento = converteCharParaInteiro(pop(pilha));
+        elemento = desempilhar(pilha);
 
         if (elemento == menor && i > 0)
-            push(pilhaAuxiliar, elemento);
+            empilhar(pilhaAuxiliar, elemento);
         if (elemento == menor && i == 0)
             i++;
         if (elemento != menor)
-            push(pilhaAuxiliar, elemento);
+            empilhar(pilhaAuxiliar, elemento);
     }
 
-    while (!empty(pilhaAuxiliar))
+    while (!pilhaVazia(pilhaAuxiliar))
     {
-        elemento = pop(pilhaAuxiliar);
-        push(pilha, elemento);
+        elemento = desempilhar(pilhaAuxiliar);
+        empilhar(pilha, elemento);
     }
+    // Libera a memória alocada pela pilha auxiliar
+    free(pilhaAuxiliar);
 }
+
 void capturarParteFracionaria(double number, char parteFracionariaComoString[])
 {
     char buffer[MAX_SIZE];
@@ -104,17 +210,15 @@ void capturarParteInteira(double number, char parteInteiraComoString[])
     }
 }
 
-void empilhar(Stack *p, char number[])
+void empilharString(Pilha *p, char number[])
 {
     for (int i = 0; i < strlen(number); i++)
-        push(p, number[i]);
+        empilhar(p, number[i]);
 }
 
 int main()
 {
-    Stack pilha_inteiros, pilha_fracionarios, pilha_auxiliar_inteiros, pilha_auxiliar_fracionarios;
-    pilha_inteiros.top = -1;
-    pilha_fracionarios.top = -1;
+    Pilha *pilha_inteiros = criarPilha(), *pilha_fracionarios = criarPilha(), *pilha_auxiliar_inteiros = criarPilha(), *pilha_auxiliar_fracionarios = criarPilha();
     int k, w, menor = 10;
     double number;
     char parteFracionariaComoString[MAX_SIZE];
@@ -127,28 +231,24 @@ int main()
     capturarParteFracionaria(number, parteFracionariaComoString);
     capturarParteInteira(number, parteInteiraComoString);
 
-    empilhar(&pilha_inteiros, parteInteiraComoString);
-    empilhar(&pilha_fracionarios, parteFracionariaComoString);
-    pilha_auxiliar_inteiros = pilha_inteiros;
-    pilha_auxiliar_inteiros.top = pilha_inteiros.top;
-    pilha_auxiliar_fracionarios = pilha_fracionarios;
-    pilha_auxiliar_fracionarios.top = pilha_fracionarios.top;
+    empilharString(pilha_inteiros, parteInteiraComoString);
+    empilharString(pilha_fracionarios, parteFracionariaComoString);
     for (int i = 0; i < k; i++)
     {
-        menor = achaMenorElementoPilha(&pilha_inteiros, &pilha_auxiliar_inteiros);
-        removeMenorElementoDaPilha(&pilha_inteiros, menor, &pilha_auxiliar_inteiros);
+        menor = achaMenorElementoPilha(pilha_inteiros);
+        removeMenorElementoDaPilha(pilha_inteiros, menor, pilha_auxiliar_inteiros);
     }
     for (int j = 0; j < w; j++)
     {
 
-        menor = achaMenorElementoPilha(&pilha_fracionarios, &pilha_auxiliar_fracionarios);
-        removeMenorElementoDaPilha(&pilha_fracionarios, menor, &pilha_auxiliar_fracionarios);
+        menor = achaMenorElementoPilha(pilha_fracionarios);
+        removeMenorElementoDaPilha(pilha_fracionarios, menor, pilha_auxiliar_fracionarios);
     }
 
-    ordenarPilha(&pilha_fracionarios, &pilha_auxiliar_fracionarios);
-    ordenarPilha(&pilha_inteiros, &pilha_auxiliar_inteiros);
+    ordenarPilha(pilha_fracionarios);
+    ordenarPilha(pilha_inteiros);
 
-    concatenarValoresExibirResultado(&pilha_inteiros, &pilha_fracionarios);
+    concatenarValoresExibirResultado(pilha_inteiros, pilha_fracionarios);
 
     return 0;
 }
