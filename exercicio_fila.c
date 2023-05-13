@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define TAM_MAX 10 // Tamanho máximo da fila
+#define TAM_MAX 10
 
 typedef struct {
     char nomes[TAM_MAX][50];
@@ -12,7 +12,6 @@ typedef struct {
     int tamanho;
 } FilaEstatica;
 
-// Função para inicializar a fila
 void inicializarFila(FilaEstatica *fila) {
     fila->inicio = 0;
     fila->fim = 0;
@@ -22,7 +21,6 @@ void inicializarFila(FilaEstatica *fila) {
     }
 }
 
-// Função para imprimir a fila com os espaços
 void imprimirComEspacos(FilaEstatica fila) {
     printf("Fila com espaços: ");
     for (int i = 0; i < TAM_MAX; i++) {
@@ -35,7 +33,6 @@ void imprimirComEspacos(FilaEstatica fila) {
     printf("\n");
 }
 
-// Função para imprimir a fila sem os espaços
 void imprimirSemEspacos(FilaEstatica fila) {
     printf("Fila sem espaços: ");
     for (int i = 0; i < TAM_MAX; i++) {
@@ -46,17 +43,14 @@ void imprimirSemEspacos(FilaEstatica fila) {
     printf("\n");
 }
 
-// Função para verificar se a fila está vazia
 bool filaVazia(FilaEstatica fila) {
     return (fila.tamanho == 0);
 }
 
-// Função para verificar se a fila está cheia
 bool filaCheia(FilaEstatica fila) {
     return (fila.tamanho == TAM_MAX);
 }
 
-// Função para inserir um elemento na fila
 void inserirElemento(FilaEstatica *fila, char nome[]) {
     if (!filaCheia(*fila)) {
         int i;
@@ -72,7 +66,6 @@ void inserirElemento(FilaEstatica *fila, char nome[]) {
     }
 }
 
-// Função para remover um elemento da fila
 void removerElemento(FilaEstatica *fila) {
     if (!filaVazia(*fila)) {
         strcpy(fila->nomes[fila->inicio], "");
