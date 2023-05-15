@@ -4,13 +4,28 @@
 #include <string.h>
 #include <ctype.h>
 
-int ehUmNumeroOuContemNumero(char* input) {
+int ehUmNumeroOuContemNumero(char *input)
+{
     int i, len = strlen(input);
     int contains_number = 0;
-    for (i = 0; i < len; i++) {
-        if (isdigit(input[i])) {
+    for (i = 0; i < len; i++)
+    {
+        if (isdigit(input[i]))
+        {
             contains_number = 1;
-        } else if (i == 0) {
+        }
+        else if (isspace(input[i]))
+        {
+            // Se o caractere atual é um espaço em branco, continue verificando
+            continue;
+        }
+        else if (i == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            // Se o caractere atual não é um dígito nem um espaço em branco, retorne falso
             return 0;
         }
     }
@@ -49,7 +64,7 @@ void imprimirComEspacos(FilaEstatica fila)
         }
         else
         {
-            printf("\033[34m%s \033[0m", fila.nomes[i]);
+            printf("\033[34m%s, \033[0m", fila.nomes[i]);
         }
     }
     printf("\n");
@@ -62,7 +77,7 @@ void imprimirSemEspacos(FilaEstatica fila)
     {
         if (strcmp(fila.nomes[i], "") != 0)
         {
-            printf("\033[33m%s\033[0m ", fila.nomes[i]);
+            printf("\033[33m%s,\033[0m ", fila.nomes[i]);
         }
     }
     printf("\n");
@@ -83,7 +98,7 @@ void inserirElemento(FilaEstatica *fila, char nome[])
     if (!filaCheia(*fila))
     {
         int i;
-        for (i = fila->tamanho - 1; i >= 0 && strcmp(nome, fila->nomes[i]) < 0; i--)
+        for (i = fila->tamanho - 1; i >= 0 && strcasecmp(nome, fila->nomes[i]) < 0; i--)
         {
             strcpy(fila->nomes[i + 1], fila->nomes[i]);
         }
@@ -116,7 +131,7 @@ void removerElemento(FilaEstatica *fila)
 void printarOpcoes()
 {
     printf("\033[32m#########################\033[0m");
-    printf("\n\033[32m# Sair - 1              #\033[0m\n");
+    printf("\n\033[32m# Sair    - 1           #\033[0m\n");
     printf("\033[32m# Inserir - 2           #\033[0m\n");
     printf("\033[32m# Remover - 3           #\033[0m\n");
     printf("\033[32m#########################\033[0m");
@@ -144,35 +159,26 @@ int main()
             break;
         case 2:
             printf("Digite um nome: ");
-            scanf("%s", nome);
+            fgets(nome, 50, stdin);
+            nome[strcspn(nome, "\n")] = '\0'; // remove o caractere de nova linha            
             if(ehUmNumeroOuContemNumero(nome)){
-                printf("\033[31mDigite um nome válido!!\033[0m\n");
-                printarOpcoes();
-                break;
-            }
-            inserirElemento(&fila, nome);
+            printf("\033[31mDigite um nome válido!!\033[0m\n");
             printarOpcoes();
-            resetOption(&option);
-            break;
-        case 3:
-            removerElemento(&fila);
-            printarOpcoes();
-            resetOption(&option);
-
-        default:
             break;
         }
+        inserirElemento(&fila, nome);
+        printarOpcoes();
+        resetOption(&option);
+        break;
+    case 3:
+        removerElemento(&fila);
+        printarOpcoes();
+        resetOption(&option);
+        break;
+    default:
+        break;
     }
-    inserirElemento(&fila, "Maria");
-    inserirElemento(&fila, "João");
-    inserirElemento(&fila, "Pedro");
-    inserirElemento(&fila, "Ana");
+}
 
-    removerElemento(&fila);
-    removerElemento(&fila);
-
-    inserirElemento(&fila, "Carlos");
-    inserirElemento(&fila, "Fernanda");
-
-    return 0;
+return 0;
 }
