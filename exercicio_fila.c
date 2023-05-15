@@ -95,6 +95,15 @@ bool filaCheia(FilaEstatica fila)
 
 void inserirElemento(FilaEstatica *fila, char nome[])
 {
+
+    // Verifica se a fila já contém o nome a ser inserido
+    for (int i = 0; i < fila->tamanho; i++) {
+        if (strcasecmp(nome, fila->nomes[i]) == 0) {
+            printf("\033[31mO nome '%s' já está na fila.\033[0m\n", nome);
+            return;
+        }
+    }
+
     if (!filaCheia(*fila))
     {
         int i;
@@ -117,17 +126,36 @@ void removerElemento(FilaEstatica *fila)
 {
     if (!filaVazia(*fila))
     {
-        strcpy(fila->nomes[fila->inicio], "");
+        // Salva o nome removido para imprimir mais tarde
+        char nomeRemovido[50];
+        strcpy(nomeRemovido, fila->nomes[0]);
         fila->inicio = (fila->inicio + 1) % TAM_MAX;
+
+        // Move todos os elementos da fila para a esquerda
+        for (int i = 0; i < fila->tamanho - 1; i++)
+        {
+            strcpy(fila->nomes[i], fila->nomes[i + 1]);
+        }
+
+        // Preenche o último elemento com uma string vazia
+        strcpy(fila->nomes[fila->tamanho - 1], "");
+
+        // Atualiza o tamanho da fila
         fila->tamanho--;
+
+        // Imprime a fila atualizada
         imprimirComEspacos(*fila);
         imprimirSemEspacos(*fila);
+
+        printf("\033[32m'%s' removido da fila.\033[0m\n", nomeRemovido);
     }
     else
     {
         printf("\033[31mFila vazia, não foi possível remover um elemento.\033[0m\n");
     }
 }
+
+
 void printarOpcoes()
 {
     printf("\033[32m#########################\033[0m");
@@ -160,25 +188,26 @@ int main()
         case 2:
             printf("Digite um nome: ");
             fgets(nome, 50, stdin);
-            nome[strcspn(nome, "\n")] = '\0'; // remove o caractere de nova linha            
-            if(ehUmNumeroOuContemNumero(nome)){
-            printf("\033[31mDigite um nome válido!!\033[0m\n");
+            nome[strcspn(nome, "\n")] = '\0'; // remove o caractere de nova linha
+            if (ehUmNumeroOuContemNumero(nome) || strlen(nome) == 0)
+            {
+                printf("\033[31mDigite um nome válido!!\033[0m\n");
+                printarOpcoes();
+                break;
+            }
+            inserirElemento(&fila, nome);
             printarOpcoes();
+            resetOption(&option);
+            break;
+        case 3:
+            removerElemento(&fila);
+            printarOpcoes();
+            resetOption(&option);
+            break;
+        default:
             break;
         }
-        inserirElemento(&fila, nome);
-        printarOpcoes();
-        resetOption(&option);
-        break;
-    case 3:
-        removerElemento(&fila);
-        printarOpcoes();
-        resetOption(&option);
-        break;
-    default:
-        break;
     }
-}
 
-return 0;
+    return 0;
 }
