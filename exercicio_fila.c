@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#define WHITE_SPACE " "
 
 int ehUmNumeroOuContemNumero(char *input)
 {
@@ -97,8 +98,10 @@ void inserirElemento(FilaEstatica *fila, char nome[])
 {
 
     // Verifica se a fila já contém o nome a ser inserido
-    for (int i = 0; i < fila->tamanho; i++) {
-        if (strcasecmp(nome, fila->nomes[i]) == 0) {
+    for (int i = 0; i < fila->tamanho; i++)
+    {
+        if (strcasecmp(nome, fila->nomes[i]) == 0)
+        {
             printf("\033[31mO nome '%s' já está na fila.\033[0m\n", nome);
             return;
         }
@@ -155,7 +158,6 @@ void removerElemento(FilaEstatica *fila)
     }
 }
 
-
 void printarOpcoes()
 {
     printf("\033[32m#########################\033[0m");
@@ -189,7 +191,7 @@ int main()
             printf("Digite um nome: ");
             fgets(nome, 50, stdin);
             nome[strcspn(nome, "\n")] = '\0'; // remove o caractere de nova linha
-            if (ehUmNumeroOuContemNumero(nome) || strlen(nome) == 0)
+            if (ehUmNumeroOuContemNumero(nome) || strlen(nome) < 3 || nome == WHITE_SPACE)
             {
                 printf("\033[31mDigite um nome válido!!\033[0m\n");
                 printarOpcoes();
