@@ -96,7 +96,6 @@ bool filaCheia(FilaEstatica fila)
 
 void inserirElemento(FilaEstatica *fila, char nome[])
 {
-
     // Verifica se a fila já contém o nome a ser inserido
     for (int i = 0; i < fila->tamanho; i++)
     {
@@ -109,13 +108,39 @@ void inserirElemento(FilaEstatica *fila, char nome[])
 
     if (!filaCheia(*fila))
     {
+        // Procura pelo primeiro espaço vazio na fila (indicado pelo hífen)
         int i;
-        for (i = fila->tamanho - 1; i >= 0 && strcasecmp(nome, fila->nomes[i]) < 0; i--)
+        for (i = 0; i < fila->tamanho; i++)
         {
-            strcpy(fila->nomes[i + 1], fila->nomes[i]);
+            if (strcmp(fila->nomes[i], "-") == 0)
+            {
+                strcpy(fila->nomes[i], nome);
+                break;
+            }
         }
-        strcpy(fila->nomes[i + 1], nome);
-        fila->tamanho++;
+
+        // Caso não tenha encontrado um espaço vazio, insere o elemento no final da fila
+        if (i == fila->tamanho)
+        {
+            strcpy(fila->nomes[fila->tamanho], nome);
+            fila->tamanho++;
+        }
+
+        // Ordena a fila em ordem alfabética
+        for (int i = 0; i < fila->tamanho - 1; i++)
+        {
+            for (int j = i + 1; j < fila->tamanho; j++)
+            {
+                if (strcasecmp(fila->nomes[i], fila->nomes[j]) > 0)
+                {
+                    char temp[50];
+                    strcpy(temp, fila->nomes[i]);
+                    strcpy(fila->nomes[i], fila->nomes[j]);
+                    strcpy(fila->nomes[j], temp);
+                }
+            }
+        }
+
         imprimirComEspacos(*fila);
         imprimirSemEspacos(*fila);
     }
@@ -125,6 +150,8 @@ void inserirElemento(FilaEstatica *fila, char nome[])
     }
 }
 
+
+
 void removerElemento(FilaEstatica *fila)
 {
     if (!filaVazia(*fila))
@@ -132,19 +159,9 @@ void removerElemento(FilaEstatica *fila)
         // Salva o nome removido para imprimir mais tarde
         char nomeRemovido[50];
         strcpy(nomeRemovido, fila->nomes[0]);
-        fila->inicio = (fila->inicio + 1) % TAM_MAX;
 
-        // Move todos os elementos da fila para a esquerda
-        for (int i = 0; i < fila->tamanho - 1; i++)
-        {
-            strcpy(fila->nomes[i], fila->nomes[i + 1]);
-        }
-
-        // Preenche o último elemento com uma string vazia
-        strcpy(fila->nomes[fila->tamanho - 1], "");
-
-        // Atualiza o tamanho da fila
-        fila->tamanho--;
+        // Substitui o primeiro elemento removido por um hífen "-"
+        strcpy(fila->nomes[0], "-");
 
         // Imprime a fila atualizada
         imprimirComEspacos(*fila);
@@ -157,6 +174,7 @@ void removerElemento(FilaEstatica *fila)
         printf("\033[31mFila vazia, não foi possível remover um elemento.\033[0m\n");
     }
 }
+
 
 void printarOpcoes()
 {
