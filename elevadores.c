@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>  // Biblioteca necessária para usar a função usleep
 
 #define NUM_ELEVADORES 15    // Total de elevadores
 #define NUM_CORREDORES 3     // Total de corredores
@@ -71,6 +72,26 @@ void moverElevador(Corredor corredores[], int corredor, int elevador) {
     }
 }
 
+// Função para exibir a animação dos elevadores
+void exibirAnimacao(Corredor corredores[]) {
+    system("clear");  // Limpa a tela
+
+    // Loop para exibir o estado dos elevadores em cada andar
+    for (int i = ANDARES_POR_CORREDOR - 1; i >= 0; i--) {
+        for (int j = 0; j < NUM_CORREDORES; j++) {
+            for (int k = 0; k < 5; k++) {
+                if (corredores[j].elevadores[k].posicao == i) {
+                    printf("[E%d] ", corredores[j].elevadores[k].id);
+                } else {
+                    printf("     ");
+                }
+            }
+            printf("  ");  // Espaçamento entre os corredores
+        }
+        printf("\n");
+    }
+}
+
 int main() {
     Corredor corredores[NUM_CORREDORES];
     int i, j;
@@ -81,13 +102,13 @@ int main() {
     // Simulação das chamadas de elevador
     // Neste exemplo, assume-se que as chamadas são feitas aleatoriamente pelos usuários
     for (i = 0; i < 300; i++) {
-        chamadas[i] = rand() % 300;  // Gera uma chamada aleatória para algum andar do prédio
+        chamadas[i] = rand() % (NUM_CORREDORES * ANDARES_POR_CORREDOR);  // Gera uma chamada aleatória para algum andar do prédio
     }
 
     // Processamento das chamadas de elevador
     for (i = 0; i < 300; i++) {
-        int corredor = chamadas[i] / (ANDARES_POR_CORREDOR * NUM_CORREDORES);  // Determina o corredor da chamada
-        int destino = chamadas[i] % (ANDARES_POR_CORREDOR * NUM_CORREDORES);   // Determina o destino da chamada
+        int corredor = chamadas[i] / ANDARES_POR_CORREDOR;  // Determina o corredor da chamada
+        int destino = chamadas[i] % ANDARES_POR_CORREDOR;   // Determina o destino da chamada
 
         int elevadorMaisProximo = encontrarElevadorMaisProximo(corredores, corredor, destino);
 
@@ -95,6 +116,10 @@ int main() {
             corredores[corredor].elevadores[elevadorMaisProximo - 1].destino = destino;
             corredores[corredor].elevadores[elevadorMaisProximo - 1].emMovimento = true;
         }
+
+        exibirAnimacao(corredores);  // Exibe a animação atualizada após cada chamada
+
+        usleep(100000);  // Aguarda 500 milissegundos (0.5 segundos) antes de atualizar a animação
     }
 
     // Simulação do movimento dos elevadores
@@ -110,6 +135,10 @@ int main() {
                 }
             }
         }
+
+        exibirAnimacao(corredores);  // Exibe a animação atualizada após cada movimento de elevador
+
+        usleep(100000);  // Aguarda 500 milissegundos (0.5 segundos) antes de atualizar a animação
     }
 
     // Impressão do estado final dos elevadores
