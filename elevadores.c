@@ -1,153 +1,150 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>  // Biblioteca necessária para usar a função usleep
+#include <time.h>
+#include <unistd.h>
 
-#define NUM_ELEVADORES 15    // Total de elevadores
-#define NUM_CORREDORES 3     // Total de corredores
-#define ANDARES_POR_CORREDOR 10   // Andares em cada corredor
+#define NUM_ELEVADORES 15
+#define NUM_CORREDORES 3
+#define ANDARES_POR_CORREDOR 100
+#define NUM_ANDARES_TOTAL (NUM_CORREDORES * ANDARES_POR_CORREDOR)
 
-// Estrutura para representar um elevador
 typedef struct {
-    int id;             // Identificador do elevador
-    int posicao;        // Posição atual do elevador
-    int destino;        // Próximo destino do elevador
-    bool emMovimento;   // Indica se o elevador está em movimento
+    int id;
+    int corredor;
+    int andar_atual;
+    int em_movimento;
 } Elevador;
 
-// Estrutura para representar um corredor
 typedef struct {
-    int id;                 // Identificador do corredor
-    Elevador elevadores[5]; // Elevadores no corredor
-} Corredor;
+    int andar_chamada;
+    int corredor_chamada;
+} Chamada;
 
-// Função para inicializar os elevadores
-void inicializarElevadores(Corredor corredores[]) {
+Elevador elevadores[NUM_ELEVADORES];
+Chamada chamadas[NUM_ANDARES_TOTAL];
+
+void inicializar_elevadores() {
     int i, j;
-    int id = 1;
-
+    int elevadores_por_corredor = NUM_ELEVADORES / NUM_CORREDORES;
     for (i = 0; i < NUM_CORREDORES; i++) {
-        for (j = 0; j < 5; j++) {
-            corredores[i].elevadores[j].id = id++;
-            corredores[i].elevadores[j].posicao = 0;
-            corredores[i].elevadores[j].destino = 0;
-            corredores[i].elevadores[j].emMovimento = false;
+        for (j = 0; j < elevadores_por_corredor; j++) {
+            int elevador_idx = i * elevadores_por_corredor + j;
+            elevadores[elevador_idx].id = elevador_idx + 1;
+            elevadores[elevador_idx].corredor = i;
+            elevadores[elevador_idx].andar_atual = i * ANDARES_POR_CORREDOR;
+            elevadores[elevador_idx].em_movimento = 0;
         }
     }
 }
 
-// Função para encontrar o elevador mais próximo para atender a uma chamada
-int encontrarElevadorMaisProximo(Corredor corredores[], int corredor, int destino) {
-    int i, j;
-    int distanciaMinima = ANDARES_POR_CORREDOR;
-    int elevadorMaisProximo = -1;
+void exibir_estado_elevadores() {
+    int i;
+    for (i = 0; i < NUM_ELEVADORES; i++) {
+        printf("Elevador %d: Corredor %d, Andar %d\n", elevadores[i].id, elevadores[i].corredor, elevadores[i].andar_atual);
+    }
+    printf("\n");
+}
 
-    for (i = 0; i < NUM_CORREDORES; i++) {
-        if (i == corredor) {
-            for (j = 0; j < 5; j++) {
-                if (!corredores[i].elevadores[j].emMovimento && abs(corredores[i].elevadores[j].posicao - destino) < distanciaMinima) {
-                    distanciaMinima = abs(corredores[i].elevadores[j].posicao - destino);
-                    elevadorMaisProximo = corredores[i].elevadores[j].id;
-                }
-            }
+void exibir_chamada(int andar, int corredor) {
+    printf("Chamada para Elevador: Corredor %d, Andar %d\n", corredor, andar);
+}
+
+int encontrar_elevador_disponivel(int andar_chamada, int corredor_chamada) {
+    int i;
+    for (i = 0; i < NUM_ELEVADORES; i++) {
+        if (!elevadores[i].em_movimento && elevadores[i].corredor == corredor_chamada) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int verificar_colisao(int elevador_idx, int destino_andar) {
+    int i;
+    for (i = 0; i < NUM_ELEVADORES; i++) {
+        if (i != elevador_idx && elevadores[i].andar_atual == destino_andar && elevadores[i].em_movimento) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void mover_elevador(int elevador_idx, int destino_andar) {
+    int corredor_destino = destino_andar / ANDARES_POR_CORREDOR;
+
+    if (elevadores[elevador_idx].corredor != corredor_destino) {
+        printf("Elevador %d: Movendo do Corredor %d para o Corredor %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].corredor, corredor_destino);
+        elevadores[elevador_idx].corredor = corredor_destino;
+    }
+
+    printf("Elevador %d: Indo para o Andar %d\n", elevadores[elevador_idx].id, destino_andar);
+
+    while (elevadores[elevador_idx].andar_atual != destino_andar) {
+        if (elevadores[elevador_idx].andar_atual < destino_andar) {
+            elevadores[elevador_idx].andar_atual++;
         } else {
-            for (j = 0; j < 5; j++) {
-                if (abs(corredores[i].elevadores[j].posicao - destino) < distanciaMinima) {
-                    distanciaMinima = abs(corredores[i].elevadores[j].posicao - destino);
-                    elevadorMaisProximo = corredores[i].elevadores[j].id;
-                }
-            }
+            elevadores[elevador_idx].andar_atual--;
+        }
+
+        exibir_estado_elevadores();
+        usleep(500000);  // Pausa de 0,5 segundo para a animação
+
+        // Verificar colisões antes de prosseguir para o próximo andar
+        if (verificar_colisao(elevador_idx, elevadores[elevador_idx].andar_atual)) {
+            printf("Elevador %d: Colisão detectada. Parando no andar %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].andar_atual);
+            break;
         }
     }
 
-    return elevadorMaisProximo;
+    printf("Elevador %d: Chegou ao Andar %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].andar_atual);
+    elevadores[elevador_idx].em_movimento = 0;
 }
 
-// Função para mover um elevador para o próximo destino
-void moverElevador(Corredor corredores[], int corredor, int elevador) {
-    if (corredores[corredor].elevadores[elevador].posicao < corredores[corredor].elevadores[elevador].destino) {
-        corredores[corredor].elevadores[elevador].posicao++;
-    } else if (corredores[corredor].elevadores[elevador].posicao > corredores[corredor].elevadores[elevador].destino) {
-        corredores[corredor].elevadores[elevador].posicao--;
+void processar_chamada(int andar_chamada, int corredor_chamada) {
+    int elevador_idx = encontrar_elevador_disponivel(andar_chamada, corredor_chamada);
+
+    if (elevador_idx != -1) {
+        elevadores[elevador_idx].em_movimento = 1;
+        printf("Elevador %d: Iniciando movimento\n", elevadores[elevador_idx].id);
+        exibir_estado_elevadores();  // Exibir estado inicial do elevador
+        mover_elevador(elevador_idx, andar_chamada);
+        return;
     }
+
+    printf("Nenhum elevador disponível no Corredor %d. Procurando no próximo corredor...\n", corredor_chamada);
+
+    int corredor_proximo = (corredor_chamada + 1) % NUM_CORREDORES;
+    elevador_idx = encontrar_elevador_disponivel(andar_chamada, corredor_proximo);
+
+    if (elevador_idx != -1) {
+        elevadores[elevador_idx].em_movimento = 1;
+        printf("Elevador %d: Iniciando movimento\n", elevadores[elevador_idx].id);
+        exibir_estado_elevadores();  // Exibir estado inicial do elevador
+        mover_elevador(elevador_idx, andar_chamada);
+        return;
+    }
+
+    printf("Nenhum elevador disponível. Aguarde...\n");
 }
 
-// Função para exibir a animação dos elevadores
-void exibirAnimacao(Corredor corredores[]) {
-    system("clear");  // Limpa a tela
+void gerar_chamadas_aleatorias() {
+    srand(time(NULL));
 
-    // Loop para exibir o estado dos elevadores em cada andar
-    for (int i = ANDARES_POR_CORREDOR - 1; i >= 0; i--) {
-        for (int j = 0; j < NUM_CORREDORES; j++) {
-            for (int k = 0; k < 5; k++) {
-                if (corredores[j].elevadores[k].posicao == i) {
-                    printf("[E%d] ", corredores[j].elevadores[k].id);
-                } else {
-                    printf("     ");
-                }
-            }
-            printf("  ");  // Espaçamento entre os corredores
-        }
-        printf("\n");
+    int i;
+    for (i = 0; i < NUM_ANDARES_TOTAL; i++) {
+        chamadas[i].andar_chamada = rand() % (NUM_ANDARES_TOTAL - 1) + 1;
+        chamadas[i].corredor_chamada = rand() % NUM_CORREDORES;
     }
 }
 
 int main() {
-    Corredor corredores[NUM_CORREDORES];
-    int i, j;
-    int chamadas[300];  // Vetor para armazenar as chamadas de elevador
+    inicializar_elevadores();
+    gerar_chamadas_aleatorias();
 
-    inicializarElevadores(corredores);
-
-    // Simulação das chamadas de elevador
-    // Neste exemplo, assume-se que as chamadas são feitas aleatoriamente pelos usuários
-    for (i = 0; i < 300; i++) {
-        chamadas[i] = rand() % (NUM_CORREDORES * ANDARES_POR_CORREDOR);  // Gera uma chamada aleatória para algum andar do prédio
-    }
-
-    // Processamento das chamadas de elevador
-    for (i = 0; i < 300; i++) {
-        int corredor = chamadas[i] / ANDARES_POR_CORREDOR;  // Determina o corredor da chamada
-        int destino = chamadas[i] % ANDARES_POR_CORREDOR;   // Determina o destino da chamada
-
-        int elevadorMaisProximo = encontrarElevadorMaisProximo(corredores, corredor, destino);
-
-        if (elevadorMaisProximo != -1) {
-            corredores[corredor].elevadores[elevadorMaisProximo - 1].destino = destino;
-            corredores[corredor].elevadores[elevadorMaisProximo - 1].emMovimento = true;
-        }
-
-        exibirAnimacao(corredores);  // Exibe a animação atualizada após cada chamada
-
-        usleep(100000);  // Aguarda 500 milissegundos (0.5 segundos) antes de atualizar a animação
-    }
-
-    // Simulação do movimento dos elevadores
-    for (i = 0; i < ANDARES_POR_CORREDOR; i++) {
-        for (j = 0; j < NUM_CORREDORES; j++) {
-            for (int k = 0; k < 5; k++) {
-                if (corredores[j].elevadores[k].emMovimento) {
-                    moverElevador(corredores, j, k);
-
-                    if (corredores[j].elevadores[k].posicao == corredores[j].elevadores[k].destino) {
-                        corredores[j].elevadores[k].emMovimento = false;
-                    }
-                }
-            }
-        }
-
-        exibirAnimacao(corredores);  // Exibe a animação atualizada após cada movimento de elevador
-
-        usleep(100000);  // Aguarda 500 milissegundos (0.5 segundos) antes de atualizar a animação
-    }
-
-    // Impressão do estado final dos elevadores
-    for (i = 0; i < NUM_CORREDORES; i++) {
-        printf("Corredor %d:\n", i + 1);
-        for (j = 0; j < 5; j++) {
-            printf("Elevador %d: Posição: %d, Destino: %d\n", corredores[i].elevadores[j].id, corredores[i].elevadores[j].posicao, corredores[i].elevadores[j].destino);
-        }
-        printf("\n");
+    int i;
+    for (i = 0; i < NUM_ANDARES_TOTAL; i++) {
+        exibir_chamada(chamadas[i].andar_chamada, chamadas[i].corredor_chamada);
+        processar_chamada(chamadas[i].andar_chamada, chamadas[i].corredor_chamada);
     }
 
     return 0;
