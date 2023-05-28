@@ -1,151 +1,123 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
-#include <unistd.h>
 
-#define NUM_ELEVADORES 15
-#define NUM_CORREDORES 3
-#define ANDARES_POR_CORREDOR 100
-#define NUM_ANDARES_TOTAL (NUM_CORREDORES * ANDARES_POR_CORREDOR)
-
-typedef struct {
-    int id;
-    int corredor;
-    int andar_atual;
-    int em_movimento;
-} Elevador;
+#define NUM_FLOORS 300
+#define NUM_CORRIDORS 3
+#define NUM_ELEVATORS 5
+#define HORIZONTAL_MOVE_FLOOR 10
 
 typedef struct {
-    int andar_chamada;
-    int corredor_chamada;
-} Chamada;
+    int floor;
+    int corridor;
+} Elevator;
 
-Elevador elevadores[NUM_ELEVADORES];
-Chamada chamadas[NUM_ANDARES_TOTAL];
+Elevator elevators[NUM_CORRIDORS][NUM_ELEVATORS];
 
-void inicializar_elevadores() {
-    int i, j;
-    int elevadores_por_corredor = NUM_ELEVADORES / NUM_CORREDORES;
-    for (i = 0; i < NUM_CORREDORES; i++) {
-        for (j = 0; j < elevadores_por_corredor; j++) {
-            int elevador_idx = i * elevadores_por_corredor + j;
-            elevadores[elevador_idx].id = elevador_idx + 1;
-            elevadores[elevador_idx].corredor = i;
-            elevadores[elevador_idx].andar_atual = i * ANDARES_POR_CORREDOR;
-            elevadores[elevador_idx].em_movimento = 0;
-        }
-    }
+bool is_valid_floor(int floor) {
+    return floor >= 0 && floor < NUM_FLOORS;
 }
 
-void exibir_estado_elevadores() {
-    int i;
-    for (i = 0; i < NUM_ELEVADORES; i++) {
-        printf("Elevador %d: Corredor %d, Andar %d\n", elevadores[i].id, elevadores[i].corredor, elevadores[i].andar_atual);
-    }
-    printf("\n");
+bool is_valid_corridor(int corridor) {
+    return corridor >= 0 && corridor < NUM_CORRIDORS;
 }
 
-void exibir_chamada(int andar, int corredor) {
-    printf("Chamada para Elevador: Corredor %d, Andar %d\n", corredor, andar);
-}
-
-int encontrar_elevador_disponivel(int andar_chamada, int corredor_chamada) {
-    int i;
-    for (i = 0; i < NUM_ELEVADORES; i++) {
-        if (!elevadores[i].em_movimento && elevadores[i].corredor == corredor_chamada) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int verificar_colisao(int elevador_idx, int destino_andar) {
-    int i;
-    for (i = 0; i < NUM_ELEVADORES; i++) {
-        if (i != elevador_idx && elevadores[i].andar_atual == destino_andar && elevadores[i].em_movimento) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void mover_elevador(int elevador_idx, int destino_andar) {
-    int corredor_destino = destino_andar / ANDARES_POR_CORREDOR;
-
-    if (elevadores[elevador_idx].corredor != corredor_destino) {
-        printf("Elevador %d: Movendo do Corredor %d para o Corredor %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].corredor, corredor_destino);
-        elevadores[elevador_idx].corredor = corredor_destino;
-    }
-
-    printf("Elevador %d: Indo para o Andar %d\n", elevadores[elevador_idx].id, destino_andar);
-
-    while (elevadores[elevador_idx].andar_atual != destino_andar) {
-        if (elevadores[elevador_idx].andar_atual < destino_andar) {
-            elevadores[elevador_idx].andar_atual++;
-        } else {
-            elevadores[elevador_idx].andar_atual--;
-        }
-
-        exibir_estado_elevadores();
-        usleep(500000);  // Pausa de 0,5 segundo para a animação
-
-        // Verificar colisões antes de prosseguir para o próximo andar
-        if (verificar_colisao(elevador_idx, elevadores[elevador_idx].andar_atual)) {
-            printf("Elevador %d: Colisão detectada. Parando no andar %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].andar_atual);
-            break;
-        }
-    }
-
-    printf("Elevador %d: Chegou ao Andar %d\n", elevadores[elevador_idx].id, elevadores[elevador_idx].andar_atual);
-    elevadores[elevador_idx].em_movimento = 0;
-}
-
-void processar_chamada(int andar_chamada, int corredor_chamada) {
-    int elevador_idx = encontrar_elevador_disponivel(andar_chamada, corredor_chamada);
-
-    if (elevador_idx != -1) {
-        elevadores[elevador_idx].em_movimento = 1;
-        printf("Elevador %d: Iniciando movimento\n", elevadores[elevador_idx].id);
-        exibir_estado_elevadores();  // Exibir estado inicial do elevador
-        mover_elevador(elevador_idx, andar_chamada);
-        return;
-    }
-
-    printf("Nenhum elevador disponível no Corredor %d. Procurando no próximo corredor...\n", corredor_chamada);
-
-    int corredor_proximo = (corredor_chamada + 1) % NUM_CORREDORES;
-    elevador_idx = encontrar_elevador_disponivel(andar_chamada, corredor_proximo);
-
-    if (elevador_idx != -1) {
-        elevadores[elevador_idx].em_movimento = 1;
-        printf("Elevador %d: Iniciando movimento\n", elevadores[elevador_idx].id);
-        exibir_estado_elevadores();  // Exibir estado inicial do elevador
-        mover_elevador(elevador_idx, andar_chamada);
-        return;
-    }
-
-    printf("Nenhum elevador disponível. Aguarde...\n");
-}
-
-void gerar_chamadas_aleatorias() {
+void initialize_elevators() {
     srand(time(NULL));
-
-    int i;
-    for (i = 0; i < NUM_ANDARES_TOTAL; i++) {
-        chamadas[i].andar_chamada = rand() % (NUM_ANDARES_TOTAL - 1) + 1;
-        chamadas[i].corredor_chamada = rand() % NUM_CORREDORES;
+    for (int i = 0; i < NUM_CORRIDORS; i++) {
+        for (int j = 0; j < NUM_ELEVATORS; j++) {
+            elevators[i][j].floor = rand() % NUM_FLOORS;
+            elevators[i][j].corridor = rand() % NUM_CORRIDORS;
+        }
     }
+}
+
+bool is_elevator_at_floor(int floor, int corridor) {
+    for (int j = 0; j < NUM_ELEVATORS; j++) {
+        if (elevators[corridor][j].floor == floor) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int calculate_total_distance(Elevator *elevator, int current_floor, int target_floor, int target_corridor) {
+    int vertical_distance = abs(elevator->floor - current_floor) + abs(target_floor - current_floor);
+    int horizontal_distance = 0;
+
+    if (elevator->corridor != target_corridor) {
+        horizontal_distance = abs((elevator->floor % HORIZONTAL_MOVE_FLOOR) - (target_floor % HORIZONTAL_MOVE_FLOOR)) * HORIZONTAL_MOVE_FLOOR;
+    }
+
+    return vertical_distance + horizontal_distance;
+}
+
+Elevator *find_closest_elevator(int current_floor, int target_floor, int target_corridor) {
+    Elevator *closest_elevator = NULL;
+    int min_distance = NUM_FLOORS * (HORIZONTAL_MOVE_FLOOR + 1);
+
+    for (int i = 0; i < NUM_CORRIDORS; i++) {
+        for (int j = 0; j < NUM_ELEVATORS; j++) {
+            int distance = calculate_total_distance(&elevators[i][j], current_floor, target_floor, target_corridor);
+            if (distance < min_distance) {
+                min_distance = distance;
+                closest_elevator = &elevators[i][j];
+            }
+        }
+    }
+
+    return closest_elevator;
 }
 
 int main() {
-    inicializar_elevadores();
-    gerar_chamadas_aleatorias();
+    initialize_elevators();
 
-    int i;
-    for (i = 0; i < NUM_ANDARES_TOTAL; i++) {
-        exibir_chamada(chamadas[i].andar_chamada, chamadas[i].corredor_chamada);
-        processar_chamada(chamadas[i].andar_chamada, chamadas[i].corredor_chamada);
+    int current_floor, target_floor, target_corridor;
+
+    printf("Posição dos elevadores:\n");
+    for (int i = 0; i < NUM_CORRIDORS; i++) {
+        for (int j = 0; j < NUM_ELEVATORS; j++) {
+            printf("Elevador %d-%d: corredor %d, andar %d\n", i, j, elevators[i][j].corridor, elevators[i][j].floor);
+        }
     }
 
-    return 0;
+
+    printf("Digite o andar atual, o andar de destino (0 a 299) e o corredor de destino (0 a 2): ");
+    scanf("%d %d %d", &current_floor, &target_floor, &target_corridor);
+
+    if (!is_valid_floor(current_floor) || !is_valid_floor(target_floor) || !is_valid_corridor(target_corridor)) {
+        printf("Entrada inválida. Por favor, insira andares entre 0 e 299 e corredores entre 0 e 2.\n");
+        return 1;
+    }
+
+    Elevator *elevator = find_closest_elevator(current_floor, target_floor, target_corridor);
+    Elevator *closest_elevator = elevator;
+
+    printf("\033[32mElevador mais próximo está no corredor %d e no andar %d.\033[0m\n", elevator->corridor, elevator->floor);
+
+    // Verifica se há outro elevador no mesmo corredor e no mesmo andar de destino
+    if (is_elevator_at_floor(target_floor, target_corridor)) {
+        printf("Há outro elevador no mesmo corredor e no mesmo andar de destino. Procurando outro elevador...\n");
+        int min_distance = NUM_FLOORS * (HORIZONTAL_MOVE_FLOOR + 1);
+        for (int i = 0; i < NUM_CORRIDORS; i++) {
+            for (int j = 0; j < NUM_ELEVATORS; j++) {
+                if (elevators[i][j].corridor != target_corridor) {
+                    int distance = calculate_total_distance(&elevators[i][j], current_floor, target_floor, target_corridor);
+                    if (distance < min_distance) {
+                        min_distance = distance;
+                        closest_elevator = &elevators[i][j];
+                    }
+                }
+            }
+        }
+        printf("\033[32mElevador mais próximo que não está no mesmo corredor está no corredor %d e no andar %d.\033[0m\n", closest_elevator->corridor, closest_elevator->floor);
+        elevator = closest_elevator;
+    }
+
+    elevator->floor = target_floor;
+    elevator->corridor = target_corridor;
+    printf("Elevador chegou ao andar de destino: %d e corredor de destino: %d.\n", elevator->floor, elevator->corridor);
+
+    0;
 }
