@@ -62,13 +62,15 @@ void print_moving_elevators()
 {
     printf("Elevadores em movimento:\n");
     for (int i = 0; i < NUM_CORRIDORS; i++)
-           for (int j = 0; j < NUM_ELEVATORS; j++)
+    {
+        for (int j = 0; j < NUM_ELEVATORS; j++)
         {
             if (elevators[i][j].moving)
             {
                 printf("Elevador %d-%d: corredor %d, andar %d\n", i, j, elevators[i][j].corridor, elevators[i][j].floor);
             }
         }
+    }
 }
 
 
@@ -102,9 +104,9 @@ Elevator *find_closest_elevator(int current_floor, int target_floor, int target_
     Elevator *closest_elevator = NULL;
     int min_distance = NUM_FLOORS * (HORIZONTAL_MOVE_FLOOR + 1);
 
-    for (int i = 0; i< NUM_CORRIDORS; i++)
+    for (int i = 0; i < NUM_CORRIDORS; i++)
     {
-        for (int j =0; j < NUM_ELEVATORS; j++)
+        for (int j = 0; j < NUM_ELEVATORS; j++)
         {
             // Verifica se o elevador está em movimento
             if (elevators[i][j].moving)
@@ -185,25 +187,19 @@ int main()
 {
     initialize_elevators();
 
-    int current_floor, target_floor, target_corridor;
-
-    printf("Posição dos elevadores:\n");
-    for (int i = 0; i < NUM_CORRIDORS; i++)
-    {
-        for (int j = 0; j< NUM_ELEVATORS; j++)
-        {
-            printf("Elevador %d-%d: corredor %d, andar %d\n", i, j, elevators[i][j].corridor, elevators[i][j].floor );
-        }
-    }
+    int input_count = 0;
+    int inputs[100][3];
 
     while (1) {
         printf("Digite o andar atual, o andar de destino (0 a 299) e o corredor de destino (0 a 2) ou -1 para encerrar: ");
+        int current_floor;
         scanf("%d", &current_floor);
 
         if (current_floor == -1) {
             break;
         }
 
+        int target_floor, target_corridor;
         scanf("%d %d", &target_floor, &target_corridor);
 
         if (!is_valid_floor(current_floor) || !is_valid_floor(target_floor) || !is_valid_corridor(target_corridor)) {
@@ -211,15 +207,24 @@ int main()
             continue;
         }
 
+        inputs[input_count][0] = current_floor;
+        inputs[input_count][1] = target_floor;
+        inputs[input_count][2] = target_corridor;
+        input_count++;
+    }
+
+    pthread_t call_threads[input_count];
+
+    for (int i = 0; i < input_count; i++) {
         Call *call = (Call *)malloc(sizeof(Call));
-        call->current_floor = current_floor;
-        call->target_floor = target_floor;
-        call->target_corridor = target_corridor;
+        call->current_floor = inputs[i][0];
+        call->target_floor = inputs[i][1];
+        call->target_corridor = inputs[i][2];
 
         // Verifica se o corredor está bloqueado por outro elevador em movimento
         bool corridor_blocked = false;
         for (int j = 0; j < NUM_ELEVATORS; j++) {
-            if (elevators[target_corridor][j].moving && elevators[target_corridor][j].corridor_lock[target_corridor]) {
+            if (elevators[call->target_corridor][j].moving && elevators[call->target_corridor][j].corridor_lock[call->target_corridor]) {
                 corridor_blocked = true;
                 break;
             }
@@ -231,9 +236,11 @@ int main()
             continue;
         }
 
-        pthread_t call_thread;
-        pthread_create(&call_thread, NULL, handle_call, (void *)call);
-        pthread_detach(call_thread);
+        pthread_create(&call_threads[i], NULL, handle_call, (void *)call);
+    }
+
+    for (int i = 0; i < input_count; i++) {
+        pthread_join(call_threads[i], NULL);
     }
 
     return 0;
