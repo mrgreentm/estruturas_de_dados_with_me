@@ -21,8 +21,8 @@ typedef struct
     bool corridor_lock[NUM_CORRIDORS]; // bloqueio de corredor
 } Elevator;
 
-
-typedef struct {
+typedef struct
+{
     int current_floor;
     int target_floor;
     int target_corridor;
@@ -51,7 +51,8 @@ void initialize_elevators()
             elevators[i][j].corridor = rand() % NUM_CORRIDORS;
             elevators[i][j].moving = false;
             elevators[i][j].queue_size = 0;
-            for (int k = 0; k < NUM_CORRIDORS; k++) {
+            for (int k = 0; k < NUM_CORRIDORS; k++)
+            {
                 elevators[i][j].corridor_lock[k] = false;
             }
         }
@@ -72,7 +73,6 @@ void print_moving_elevators()
         }
     }
 }
-
 
 bool is_elevator_at_floor(int floor, int corridor)
 {
@@ -114,6 +114,12 @@ Elevator *find_closest_elevator(int current_floor, int target_floor, int target_
                 continue;
             }
 
+            // Verifica se o elevador está na mesma rota
+            if (elevators[i][j].floor % HORIZONTAL_MOVE_FLOOR != target_floor % HORIZONTAL_MOVE_FLOOR)
+            {
+                continue;
+            }
+
             int distance = calculate_total_distance(&elevators[i][j], current_floor, target_floor, target_corridor);
             if (distance < min_distance)
             {
@@ -126,7 +132,8 @@ Elevator *find_closest_elevator(int current_floor, int target_floor, int target_
     return closest_elevator;
 }
 
-void *handle_call(void *arg) {
+void *handle_call(void *arg)
+{
     Call *call = (Call *)arg;
     int current_floor = call->current_floor;
     int target_floor = call->target_floor;
@@ -135,8 +142,8 @@ void *handle_call(void *arg) {
 
     Elevator *elevator = find_closest_elevator(current_floor, target_floor, target_corridor);
 
-    if (elevator == NULL) {
-        printf("Todos os elevadores estão em movimento. Por favor, aguarde um momento e tente novamente.\n");
+    if (elevator == NULL)
+    {
         sleep(SLEEP_TIME);
         handle_call(arg);
         return NULL;
@@ -150,10 +157,25 @@ void *handle_call(void *arg) {
     elevator->queue_size++;
 
     // Se o elevador não estiver em movimento, designa-o para atender a chamada
-    if (!elevator->moving) {
+    if (!elevator->moving)
+    {
+        bool reused_elevator = false;
+
+        // Verifica se há algum elevador na mesma rota que já está em movimento
+        for (int i = 0; i < NUM_ELEVATORS; i++)
+        {
+            if (elevators[elevator->corridor][i].moving && elevators[elevator->corridor][i].floor % HORIZONTAL_MOVE_FLOOR == target_floor % HORIZONTAL_MOVE_FLOOR)
+            {
+                reused_elevator = true;
+                printf("\033[33mElevador reaproveitado no corredor %d e no andar %d.\033[0m\n", elevator->corridor, elevator->floor);
+                break;
+            }
+        }
+
         elevator->moving = true;
 
-        for (int i = 0; i < elevator->queue_size; i++) {
+        for (int i = 0; i < elevator->queue_size; i++)
+        {
             int target_floor = elevator->call_queue[i][0];
             int target_corridor = elevator->call_queue[i][1];
 
@@ -161,8 +183,9 @@ void *handle_call(void *arg) {
             sleep(SLEEP_TIME);
 
             // Desbloqueia o corredor anterior
-            if (i > 0) {
-                elevator->corridor_lock[elevator->call_queue[i-1][1]] = false;
+            if (i > 0)
+            {
+                elevator->corridor_lock[elevator->call_queue[i - 1][1]] = false;
             }
 
             // Bloqueia o corredor atual
@@ -174,10 +197,16 @@ void *handle_call(void *arg) {
         }
 
         // Desbloqueia o corredor final
-        elevator->corridor_lock[elevator->call_queue[elevator->queue_size-1][1]] = false;
+        elevator->corridor_lock[elevator->call_queue[elevator->queue_size - 1][1]] = false;
 
         elevator->queue_size = 0;
         elevator->moving = false;
+
+        // Se o elevador foi reaproveitado, não é necessário esperar pela chamada seguinte
+        if (reused_elevator)
+        {
+            return NULL;
+        }
     }
 
     return NULL;
@@ -187,22 +216,34 @@ int main()
 {
     initialize_elevators();
 
+    printf("Posição dos elevadores:\n");
+    for (int i = 0; i < NUM_CORRIDORS; i++)
+    {
+        for (int j = 0; j < NUM_ELEVATORS; j++)
+        {
+            printf("Elevador %d-%d: corredor %d, andar %d\n", i, j, elevators[i][j].corridor, elevators[i][j].floor);
+        }
+    }
+
     int input_count = 0;
     int inputs[100][3];
 
-    while (1) {
+    while (1)
+    {
         printf("Digite o andar atual, o andar de destino (0 a 299) e o corredor de destino (0 a 2) ou -1 para encerrar: ");
         int current_floor;
         scanf("%d", &current_floor);
 
-        if (current_floor == -1) {
+        if (current_floor == -1)
+        {
             break;
         }
 
         int target_floor, target_corridor;
         scanf("%d %d", &target_floor, &target_corridor);
 
-        if (!is_valid_floor(current_floor) || !is_valid_floor(target_floor) || !is_valid_corridor(target_corridor)) {
+        if (!is_valid_floor(current_floor) || !is_valid_floor(target_floor) || !is_valid_corridor(target_corridor))
+        {
             printf("Entrada inválida. Por favor, insira andares entre 0 e 299 e corredores entre 0 e 2.\n");
             continue;
         }
@@ -215,7 +256,8 @@ int main()
 
     pthread_t call_threads[input_count];
 
-    for (int i = 0; i < input_count; i++) {
+    for (int i = 0; i < input_count; i++)
+    {
         Call *call = (Call *)malloc(sizeof(Call));
         call->current_floor = inputs[i][0];
         call->target_floor = inputs[i][1];
@@ -223,14 +265,17 @@ int main()
 
         // Verifica se o corredor está bloqueado por outro elevador em movimento
         bool corridor_blocked = false;
-        for (int j = 0; j < NUM_ELEVATORS; j++) {
-            if (elevators[call->target_corridor][j].moving && elevators[call->target_corridor][j].corridor_lock[call->target_corridor]) {
+        for (int j = 0; j < NUM_ELEVATORS; j++)
+        {
+            if (elevators[call->target_corridor][j].moving && elevators[call->target_corridor][j].corridor_lock[call->target_corridor])
+            {
                 corridor_blocked = true;
                 break;
             }
         }
 
-        if (corridor_blocked) {
+        if (corridor_blocked)
+        {
             printf("O corredor está bloqueado por outro elevador em movimento. Por favor, aguarde um momento e tente novamente.\n");
             sleep(SLEEP_TIME);
             continue;
@@ -239,7 +284,8 @@ int main()
         pthread_create(&call_threads[i], NULL, handle_call, (void *)call);
     }
 
-    for (int i = 0; i < input_count; i++) {
+    for (int i = 0; i < input_count; i++)
+    {
         pthread_join(call_threads[i], NULL);
     }
 
